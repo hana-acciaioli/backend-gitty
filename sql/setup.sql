@@ -22,9 +22,10 @@ CREATE TABLE github_users (
 CREATE TABLE posts (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   description VARCHAR(255) NOT NULL
-)
+);
 
-insert into posts (
+INSERT INTO posts (
   description
 ) VALUES
-('Im just a post. Yes Im only a post. And Im sitting here on backend-gitty. Well, its a long, long journety to the heroku deploy...')
+('Im just a post. Yes Im only a post. And Im sitting here on backend-gitty. Well, its a long, long journety to the heroku deploy...'),
+('second post!');
