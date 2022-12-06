@@ -2,6 +2,7 @@ const pool = require('../lib/utils/pool');
 const setup = require('../data/setup.js');
 const request = require('supertest');
 const app = require('../lib/app');
+const { agent } = require('supertest');
 
 jest.mock('../lib/services/githubService');
 
@@ -32,5 +33,13 @@ describe('github auth routes', () => {
       iat: expect.any(Number),
       exp: expect.any(Number),
     });
+  });
+  it('DELETE / deletes the user session', async () => {
+    await request
+      .agent(app)
+      .get('/api/v1/github/callback?code=42')
+      .redirects(1);
+    const deleteResp = await agent(app).delete('/api/v1/github');
+    expect(deleteResp.status).toBe(204);
   });
 });
