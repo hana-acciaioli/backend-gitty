@@ -39,6 +39,7 @@ describe('github auth routes', () => {
       .agent(app)
       .get('/api/v1/github/callback?code=42')
       .redirects(1);
+
     const deleteResp = await agent(app).delete('/api/v1/github');
     expect(deleteResp.status).toBe(204);
   });

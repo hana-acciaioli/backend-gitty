@@ -2,7 +2,7 @@ const pool = require('../lib/utils/pool');
 const setup = require('../data/setup');
 const request = require('supertest');
 const app = require('../lib/app');
-// const { agent } = require('supertest');
+const { agent } = require('supertest');
 const UserService = require('../lib/services/UserService');
 
 jest.mock('../lib/services/githubService');
@@ -26,8 +26,11 @@ describe('posts routes', () => {
   beforeEach(() => {
     return setup(pool);
   });
-  it('GET /api/v1/posts should return a list all posts for all users', async () => {
-    const resp = await request(app).get('/api/v1/posts');
+
+  it('GET /api/v1/posts should return a list all posts for github users', async () => {
+    const agent = request.agent(app);
+    await agent.get('/api/v1/github/callback?code=42').redirects(1);
+    const resp = await agent.get('/api/v1/posts');
     expect(resp.status).toBe(200);
     expect(resp.body).toMatchInlineSnapshot(`
       Array [
@@ -55,22 +58,20 @@ describe('posts routes', () => {
       }
     `);
   });
-  //   it('POST /api/v1/posts should create a new post for a signed an oauth user', async () => {
-  //     await request
-  //       .agent(app)
-  //       .get('/api/v1/github/callback?code=42')
-  //       .redirects(1);
-  //     const postResp = await agent(app)
-  //       .post('/api/v1/posts')
-  //       .send({ description: 'Im number 3! But alas, temporary' });
-  //     expect(postResp.status).toBe(200);
-  //     expect(postResp.body).toMatchInlineSnapshot(`
-  //       Object {
-  //         "description": "Im number 3! But alas, temporary",
-  //         "id": "3",
-  //       }
-  //     `);
-  //   });
+  it('POST /api/v1/posts should create a new post for a signed an oauth user', async () => {
+    const agent = await request.agent(app);
+    await agent.get('/api/v1/github/callback?code=42').redirects(1);
+    const postResp = await agent
+      .post('/api/v1/posts')
+      .send({ description: 'Im number 3! But alas, temporary' });
+    expect(postResp.status).toBe(200);
+    expect(postResp.body).toMatchInlineSnapshot(`
+        Object {
+          "description": "Im number 3! But alas, temporary",
+          "id": "3",
+        }
+      `);
+  });
   it('POST /api/v1/posts should NOT create a new post when NOT authorized ', async () => {
     const agent = await request.agent(app);
     const resp = await agent
